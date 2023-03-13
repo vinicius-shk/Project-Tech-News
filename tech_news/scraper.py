@@ -7,8 +7,8 @@ from parsel import Selector
 def fetch(url):
     sleep(1)
     try:
-        hearders = {"user-agent": "Fake user-agent"}
-        response = requests.get(url, hearders=hearders, timeout=3)
+        headers = {"user-agent": "Fake user-agent"}
+        response = requests.get(url, headers=headers, timeout=3)
         if response.status_code != 200:
             return None
         return response.text
@@ -39,7 +39,29 @@ def scrape_next_page_link(html_content):
 
 # Requisito 4
 def scrape_news(html_content):
-    """Seu código deve vir aqui"""
+    selector = Selector(html_content)
+    content_dict = dict()
+    content_dict["url"] = selector.css(
+        "link[rel='canonical']::attr(href)"
+        ).get()
+    content_dict["title"] = selector.css("h1.entry-title::text").get().strip()
+    content_dict["timestamp"] = selector.css("li.meta-date::text").get()
+    content_dict["writer"] = selector.css("span.author > a::text").get()
+    content_dict["reading_time"] = selector.css(
+        "li.meta-reading-time::text"
+        ).get()
+    if content_dict["reading_time"][1].isdigit():
+        number_str = (
+            content_dict["reading_time"][0] + content_dict["reading_time"][1]
+            )
+        content_dict["reading_time"] = int(number_str)
+    else:
+        content_dict["reading_time"] = int(content_dict["reading_time"][0])
+    content_dict["summary"] = ''.join(selector.css(
+        "div.entry-content > p:first-of-type *::text"
+        ).getall()).strip()
+    content_dict["category"] = selector.css("span.label::text").get()
+    return content_dict
 
 
 # Requisito 5
