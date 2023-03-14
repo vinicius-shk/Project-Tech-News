@@ -47,6 +47,3 @@ def test_reading_plan_group_news():
         assert news_by_time["readable"][0]['unfilled_time'] == 3
         with pytest.raises(ValueError):
             ReadingPlanService.group_news_for_available_time(0)
-
-
-test_reading_plan_group_news()
